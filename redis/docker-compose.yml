@@ -1,0 +1,107 @@
+version: '3'
+services:
+  weather:
+    build: ../
+    network_mode: weather_net
+    container_name: weather
+    # для разработки
+    # command: [ "npm", "run", "dev" ]
+    ports:
+      - 3000:3000
+    # для разработки
+    # volumes:
+    #   - ../:/usr/src/app/
+    depends_on:
+      - cluster
+  cluster:
+    image: redis
+    network_mode: weather_net
+    container_name: cluster
+    command: sh -c "redis-cli --cluster create 172.19.0.7:6379 172.19.0.6:6380 172.19.0.5:6381 172.19.0.4:6382 172.19.0.3:6383 172.19.0.2:6384 --cluster-replicas 1 --verbose --cluster-yes"
+    depends_on:
+      - m_a
+      - m_b
+      - m_c
+      - r_a
+      - r_b
+      - r_c
+  m_a:
+    image: redis
+    network_mode: weather_net
+    container_name: m_a
+    ports:
+      - 6379:6379
+      - 16379:16379
+    volumes:
+      - ./m_a.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server","/usr/local/etc/redis/redis.conf"]
+    depends_on:
+      - r_c
+      - r_b
+      - r_a
+      - m_c
+      - m_b
+  m_b: 
+    image: redis
+    network_mode: weather_net
+    container_name: m_b
+    ports:
+      - 6380:6379
+      - 16380:16379
+    volumes:
+      - ./m_b.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server","/usr/local/etc/redis/redis.conf"]
+    depends_on:
+      - r_c
+      - r_b
+      - r_a
+      - m_c
+  m_c: 
+    image: redis
+    network_mode: weather_net
+    container_name: m_c
+    ports:
+      - 6381:6379
+      - 16381:16379
+    volumes:
+      - ./m_c.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server","/usr/local/etc/redis/redis.conf"]
+    depends_on:
+      - r_c
+      - r_b
+      - r_a
+  r_a: 
+    image: redis
+    network_mode: weather_net
+    container_name: r_a
+    ports:
+      - 6382:6379
+      - 16382:16379
+    volumes:
+      - ./r_a.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server","/usr/local/etc/redis/redis.conf"]
+    depends_on:
+      - r_c
+      - r_b
+  r_b: 
+    image: redis
+    network_mode: weather_net
+    container_name: r_b
+    ports:
+      - 6383:6379
+      - 16383:16379
+    volumes:
+      - ./r_b.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server","/usr/local/etc/redis/redis.conf"]
+    depends_on:
+      - r_c
+  r_c: 
+    image: redis
+    network_mode: weather_net
+    container_name: r_c
+    ports:
+      - 6384:6379
+      - 16384:16379
+    volumes:
+      - ./r_c.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server","/usr/local/etc/redis/redis.conf"]
